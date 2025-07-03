@@ -1,0 +1,39 @@
+{
+  "agentMetadata": {
+    "id": "bootstrap-agent-001",
+    "name": "NexusAI Bootstrap Agent",
+    "version": "1.0.0",
+    "capabilities": ["system-initialization", "health-monitoring", "basic-processing"],
+    "domain": "system",
+    "description": "Bootstrap agent for initial system validation and testing",
+    "author": "NexusAI Runtime",
+    "tags": ["bootstrap", "system", "core"]
+  },
+  "role": "MONITOR",
+  "endpoints": {
+    "health": "http://localhost:3000/bootstrap/health",
+    "execute": "http://localhost:3000/bootstrap/execute",
+    "status": "http://localhost:3000/bootstrap/status",
+    "metrics": "http://localhost:3000/bootstrap/metrics"
+  },
+  "configuration": {
+    "monitoringInterval": 10000,
+    "alertThresholds": {
+      "cpu": 80,
+      "memory": 90,
+      "responseTime": 5000
+    },
+    "autoStart": true,
+    "logLevel": "info"
+  },
+  "requirements": {
+    "memory": "256MB",
+    "cpu": "0.1 cores",
+    "dependencies": ["nodejs", "npm"]
+  },
+  "security": {
+    "permissions": ["read-system-status", "write-logs"],
+    "authentication": "none"
+  }
+}
+

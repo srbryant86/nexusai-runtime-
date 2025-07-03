@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveShell Preview - ControlPanel_v2 RuntimeSync</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: 
+                radial-gradient(circle at 10% 10%, rgba(0, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #2c1810 75%, #0a0a0a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 60px 1fr 40px;
+            height: 100vh;
+            gap: 1px;
+            background: #111;
+        }
+
+        /* Header */
+        .preview-header {
+            background: linear-gradient(45deg, #1a1a2e, #00ffff, #ff00ff, #00ffff, #1a1a2e);
+            background-size: 400% 400%;
+            animation: headerFlow 12s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 2px solid #00ffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes headerFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .preview-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+            z-index: 1;
+        }
+
+        .preview-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff00;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        /* Main Content */
+        .preview-content {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            gap: 1px;
+            background: #111;
+            overflow: hidden;
+        }
+
+        /* Left Panel - Agent Status */
+        .agent-panel {
+            background: rgba(26, 26, 46, 0.95);
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #333;
+        }
+
+        .panel-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00ffff;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px solid #00ffff;
+            padding-bottom: 8px;
+        }
+
+        .agent-item {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            animation: agentScan 4s infinite;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes agentScan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .agent-item.claude { --delay: 0s; border-color: #9b59b6; }
+        .agent-item.chatgpt { --delay: 0.8s; border-color: #00ff00; }
+        .agent-item.mistral { --delay: 1.6s; border-color: #ff6b35; }
+        .agent-item.gemini { --delay: 2.4s; border-color: #4285f4; }
+        .agent-item.manus { --delay: 3.2s; border-color: #00ffff; }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .agent-role {
+            font-size: 10px;
+            color: #aaa;
+            margin-bottom: 6px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .agent-load {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .load-bar {
+            width: 50px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .load-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            transition: width 0.5s ease;
+            animation: loadPulse 2s infinite;
+        }
+
+        @keyframes loadPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Center Panel - Live Interface */
+        .interface-panel {
+            background: rgba(22, 33, 62, 0.95);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interface-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .interface-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00ffff;
+        }
+
+        .interface-content {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .task-button {
+            background: linear-gradient(45deg, #1a1a2e, #00ffff);
+            border: none;
+            color: white;
+            padding: 12px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .task-button:hover::before {
+            left: 100%;
+        }
+
+        .task-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .upload-zone {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .upload-zone::after {
+            content: '📁';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            opacity: 0.3;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+            50% { transform: translate(-50%, -50%) translateY(-5px); }
+        }
+
+        /* Right Panel - Live Monitoring */
+        .monitor-panel {
+            background: rgba(44, 24, 16, 0.95);
+            padding: 15px;
+            overflow-y: auto;
+            border-left: 1px solid #333;
+        }
+
+        .metrics-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00ffff, #ff00ff, #00ffff);
+            animation: metricGlow 3s linear infinite;
+        }
+
+        @keyframes metricGlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ffff;
+            margin-bottom: 4px;
+            animation: valueUpdate 2s ease infinite;
+        }
+
+        @keyframes valueUpdate {
+            0%, 90%, 100% { transform: scale(1); }
+            95% { transform: scale(1.05); }
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #aaa;
+        }
+
+        .trace-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 6px;
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+        }
+
+        .trace-entry {
+            margin-bottom: 6px;
+            padding: 4px;
+            border-left: 2px solid #333;
+            padding-left: 8px;
+            animation: traceAppear 0.5s ease;
+        }
+
+        @keyframes traceAppear {
+            0% { opacity: 0; transform: translateX(-10px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        .trace-entry.info { border-left-color: #00ffff; }
+        .trace-entry.success { border-left-color: #00ff00; }
+        .trace-entry.warning { border-left-color: #ffff00; }
+
+        .trace-time {
+            color: #666;
+            font-size: 8px;
+        }
+
+        /* Footer */
+        .preview-footer {
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            border-top: 1px solid #333;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .preview-content {
+                grid-template-columns: 250px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .preview-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .agent-panel, .monitor-panel {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <!-- Header -->
+        <div class="preview-header">
+            <div class="preview-title">🚀 LiveShell Preview - ControlPanel_v2 RuntimeSync</div>
+            <div class="preview-status">
+                <span>LIVE</span>
+                <div class="status-dot"></div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="preview-content">
+            <!-- Left Panel - Agent Status -->
+            <div class="agent-panel">
+                <div class="panel-header">🤖 Agent Sockets</div>
+                
+                <div class="agent-item claude">
+                    <div class="agent-name">🧠 Claude</div>
+                    <div class="agent-role">Logic Architect, T87+ Authority</div>
+                    <div class="agent-load">
+                        <span>Load: 23%</span>
+                        <div class="load-bar">
+                            <div class="load-fill" style="width: 23%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-item chatgpt">
+                    <div class="agent-name">💻 ChatGPT</div>
+                    <div class="agent-role">Dev Synthesis, Mechanics</div>
+                    <div class="agent-load">
+                        <span>Load: 67%</span>
+                        <div class="load-bar">
+                            <div class="load-fill" style="width: 67%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-item mistral">
+                    <div class="agent-name">⚡ Mistral</div>
+                    <div class="agent-role">Fallback Execution</div>
+                    <div class="agent-load">
+                        <span>Load: 12%</span>
+                        <div class="load-bar">
+                            <div class="load-fill" style="width: 12%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-item gemini">
+                    <div class="agent-name">💎 Gemini</div>
+                    <div class="agent-role">Insight Export</div>
+                    <div class="agent-load">
+                        <span>Load: 34%</span>
+                        <div class="load-bar">
+                            <div class="load-fill" style="width: 34%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-item manus">
+                    <div class="agent-name">🌐 Manus</div>
+                    <div class="agent-role">UI Renderer, Deployment</div>
+                    <div class="agent-load">
+                        <span>Load: 45%</span>
+                        <div class="load-bar">
+                            <div class="load-fill" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel - Live Interface -->
+            <div class="interface-panel">
+                <div class="interface-header">
+                    <div class="interface-title">🖥️ Claude's Live UI Shell</div>
+                </div>
+                
+                <div class="interface-content">
+                    <div class="task-grid">
+                        <button class="task-button">🎨 Generate UI</button>
+                        <button class="task-button">💻 Compile Code</button>
+                        <button class="task-button">🧠 T87+ Analysis</button>
+                        <button class="task-button">🔧 System Synthesis</button>
+                        <button class="task-button">📊 Export Insights</button>
+                        <button class="task-button">⚡ Fallback Execute</button>
+                    </div>
+
+                    <div class="upload-zone">
+                        <h4>📁 Local Asset Upload</h4>
+                        <p style="font-size: 11px; margin-top: 5px;">Drop files here for AI analysis</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Live Monitoring -->
+            <div class="monitor-panel">
+                <div class="panel-header">📊 Runtime Monitor</div>
+                
+                <div class="metrics-container">
+                    <div class="metric-card">
+                        <div class="metric-value" id="activeTasks">12</div>
+                        <div class="metric-label">Active Tasks</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value" id="completedTasks">247</div>
+                        <div class="metric-label">Completed</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value" id="successRate">98.5%</div>
+                        <div class="metric-label">Success Rate</div>
+                    </div>
+                </div>
+
+                <div class="trace-container" id="traceLog">
+                    <div class="trace-entry info">
+                        <div class="trace-time">[08:11:42]</div>
+                        <div>[SYSTEM] ControlPanel_v2 RuntimeSync active</div>
+                    </div>
+                    <div class="trace-entry success">
+                        <div class="trace-time">[08:11:43]</div>
+                        <div>[CLAUDE] LiveShell synchronized</div>
+                    </div>
+                    <div class="trace-entry success">
+                        <div class="trace-time">[08:11:44]</div>
+                        <div>[CHATGPT] Dev synthesis ready</div>
+                    </div>
+                    <div class="trace-entry success">
+                        <div class="trace-time">[08:11:45]</div>
+                        <div>[MISTRAL] Fallback execution online</div>
+                    </div>
+                    <div class="trace-entry success">
+                        <div class="trace-time">[08:11:46]</div>
+                        <div>[GEMINI] Insight export loaded</div>
+                    </div>
+                    <div class="trace-entry info">
+                        <div class="trace-time">[08:11:47]</div>
+                        <div>[MANUS] UI renderer active</div>
+                    </div>
+                    <div class="trace-entry success">
+                        <div class="trace-time">[08:11:48]</div>
+                        <div>[NEXUSAI] Multi-agent sync complete</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="preview-footer">
+            LiveShell Preview - Real-time ControlPanel_v2 RuntimeSync Interface
+        </div>
+    </div>
+
+    <script>
+        // Simulate live updates
+        function updateMetrics() {
+            const activeTasks = document.getElementById('activeTasks');
+            const completedTasks = document.getElementById('completedTasks');
+            const successRate = document.getElementById('successRate');
+            
+            // Simulate changing values
+            const currentActive = parseInt(activeTasks.textContent);
+            const currentCompleted = parseInt(completedTasks.textContent);
+            const currentRate = parseFloat(successRate.textContent);
+            
+            activeTasks.textContent = Math.max(0, currentActive + Math.floor(Math.random() * 3) - 1);
+            completedTasks.textContent = currentCompleted + Math.floor(Math.random() * 2);
+            successRate.textContent = Math.max(95, Math.min(100, currentRate + (Math.random() - 0.5) * 0.5)).toFixed(1) + '%';
+        }
+
+        function addTraceEntry() {
+            const traceLog = document.getElementById('traceLog');
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+            
+            const messages = [
+                { type: 'info', text: '[ROUTER] Task routing optimization complete' },
+                { type: 'success', text: '[CLAUDE] UI generation task completed' },
+                { type: 'success', text: '[CHATGPT] Code compilation successful' },
+                { type: 'info', text: '[SYSTEM] Memory usage: 67% (optimal)' },
+                { type: 'success', text: '[MISTRAL] Fallback execution ready' },
+                { type: 'warning', text: '[MONITOR] High load detected on ChatGPT' },
+                { type: 'success', text: '[GEMINI] Insight export generated' }
+            ];
+            
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            
+            const entry = document.createElement('div');
+            entry.className = `trace-entry ${message.type}`;
+            entry.innerHTML = `
+                <div class="trace-time">[${timestamp}]</div>
+                <div>${message.text}</div>
+            `;
+            
+            traceLog.appendChild(entry);
+            traceLog.scrollTop = traceLog.scrollHeight;
+            
+            // Keep only last 20 entries
+            while (traceLog.children.length > 20) {
+                traceLog.removeChild(traceLog.firstChild);
+            }
+        }
+
+        function updateAgentLoads() {
+            const loadBars = document.querySelectorAll('.load-fill');
+            const loadTexts = document.querySelectorAll('.agent-load span');
+            
+            loadBars.forEach((bar, index) => {
+                const currentWidth = parseInt(bar.style.width);
+                const change = (Math.random() - 0.5) * 10;
+                const newWidth = Math.max(5, Math.min(95, currentWidth + change));
+                
+                bar.style.width = newWidth + '%';
+                if (loadTexts[index]) {
+                    loadTexts[index].textContent = `Load: ${Math.round(newWidth)}%`;
+                }
+            });
+        }
+
+        // Start live updates
+        setInterval(updateMetrics, 3000);
+        setInterval(addTraceEntry, 5000);
+        setInterval(updateAgentLoads, 4000);
+
+        // Add click handlers for task buttons
+        document.querySelectorAll('.task-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const taskType = button.textContent.trim();
+                addTraceEntry();
+                
+                // Visual feedback
+                button.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Add drag and drop for upload zone
+        const uploadZone = document.querySelector('.upload-zone');
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#00ff00';
+            uploadZone.style.background = 'rgba(0, 255, 0, 0.1)';
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.style.borderColor = '#333';
+            uploadZone.style.background = 'rgba(0, 0, 0, 0.4)';
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#333';
+            uploadZone.style.background = 'rgba(0, 0, 0, 0.4)';
+            
+            // Simulate file upload
+            const files = e.dataTransfer.files;
+            for (let file of files) {
+                setTimeout(() => {
+                    const traceLog = document.getElementById('traceLog');
+                    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+                    const entry = document.createElement('div');
+                    entry.className = 'trace-entry info';
+                    entry.innerHTML = `
+                        <div class="trace-time">[${timestamp}]</div>
+                        <div>[UPLOAD] Processing file: ${file.name}</div>
+                    `;
+                    traceLog.appendChild(entry);
+                    traceLog.scrollTop = traceLog.scrollHeight;
+                }, 500);
+            }
+        });
+
+        console.log('LiveShell Preview - ControlPanel_v2 RuntimeSync loaded successfully');
+    </script>
+</body>
+</html>
+
