@@ -109,6 +109,12 @@ bootstrap_id = registry.register_agent(bootstrap_agent)
 
 # Flask API routes
 
+@app.route('/self-healing.js')
+def self_healing_js():
+    with open('src/templates/self-healing.js', 'r') as f:
+        content = f.read()
+    return content, 200, {'Content-Type': 'application/javascript'}
+
 @app.route('/')
 def index():
     return render_template('index.html')
