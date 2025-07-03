@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusAI Runtime Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #2c1810 75%, #0a0a0a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #1a1a2e, #daa520, #8b0000, #daa520, #1a1a2e);
+            background-size: 500% 500%;
+            animation: nexusPulse 20s ease infinite;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border: 2px solid #daa520;
+        }
+
+        @keyframes nexusPulse {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(218, 165, 32, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(218, 165, 32, 0.4);
+            border-color: #ffd700;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #daa520;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+
+        .agents-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(218, 165, 32, 0.5);
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #ffd700;
+            border-bottom: 2px solid #daa520;
+            padding-bottom: 10px;
+        }
+
+        .agent-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #daa520;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .agent-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .agent-role {
+            display: inline-block;
+            background: #daa520;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff00;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #daa520 0%, #ffd700 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 25px;
+            color: #000;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(218, 165, 32, 0.4);
+            background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+        }
+
+        .api-info {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #667eea;
+        }
+
+        .endpoint {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            border-left: 3px solid #667eea;
+        }
+
+        .method {
+            color: #4ecdc4;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .url {
+            color: #ffd700;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            opacity: 0.7;
+            border-top: 1px solid rgba(218, 165, 32, 0.3);
+            margin-top: 30px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #daa520;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>🤖 NexusAI Runtime Dashboard</h1>
+            <p>Advanced Agent Registry & Orchestration System</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalAgents">-</div>
+                <div class="stat-label">Total Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeAgents">-</div>
+                <div class="stat-label">Active Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="healthyAgents">-</div>
+                <div class="stat-label">Healthy Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="systemStatus">🟢</div>
+                <div class="stat-label">System Status</div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <button class="control-btn" onclick="refreshData()">🔄 Refresh Data</button>
+            <button class="control-btn" onclick="registerAgent()">➕ Register Agent</button>
+            <button class="control-btn" onclick="viewLogs()">📋 View Logs</button>
+            <button class="control-btn" onclick="exportData()">📊 Export Data</button>
+        </div>
+
+        <div class="agents-section">
+            <h2 class="section-title">🤖 Registered Agents</h2>
+            <div id="agentsList">
+                <div class="loading"></div> Loading agents...
+            </div>
+        </div>
+
+        <div class="api-info">
+            <h2 class="section-title">🔗 API Endpoints</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span class="url">/health</span> - System health check
+            </div>
+            <div class="endpoint">
+                <span class="method">POST</span>
+                <span class="url">/agents/register</span> - Register new agent
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span class="url">/agents/query</span> - Query agents with filters
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span class="url">/registry/stats</span> - Registry statistics
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span class="url">/schema</span> - Agent contract schema
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>NexusAI Runtime v0.1.0 | Repository: <a href="https://github.com/srbryant86/nexusai-runtime-" style="color: #daa520;">GitHub</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh data every 5 seconds
+        setInterval(refreshData, 5000);
+        
+        // Load initial data
+        refreshData();
+
+        async function refreshData() {
+            try {
+                // Fetch stats
+                const statsResponse = await fetch('/registry/stats');
+                const statsData = await statsResponse.json();
+                
+                if (statsData.success) {
+                    const stats = statsData.stats;
+                    document.getElementById('totalAgents').textContent = stats.totalAgents;
+                    document.getElementById('activeAgents').textContent = stats.activeAgents;
+                    document.getElementById('healthyAgents').textContent = stats.healthyAgents;
+                }
+
+                // Fetch agents
+                const agentsResponse = await fetch('/agents/query');
+                const agentsData = await agentsResponse.json();
+                
+                if (agentsData.success) {
+                    displayAgents(agentsData.agents);
+                }
+
+                // Update system status
+                document.getElementById('systemStatus').textContent = '🟢';
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('systemStatus').textContent = '🔴';
+            }
+        }
+
+        function displayAgents(agents) {
+            const agentsList = document.getElementById('agentsList');
+            
+            if (agents.length === 0) {
+                agentsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No agents registered</p>';
+                return;
+            }
+
+            agentsList.innerHTML = agents.map(agent => `
+                <div class="agent-card">
+                    <div class="agent-name">${agent.contract.agentMetadata.name}</div>
+                    <div class="agent-role">${agent.contract.role}</div>
+                    <div class="agent-status">
+                        <div class="status-indicator"></div>
+                        <span>Status: ${agent.status} | Health: ${agent.healthStatus}</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                        ID: ${agent.registrationId}<br>
+                        Capabilities: ${agent.contract.agentMetadata.capabilities.join(', ')}<br>
+                        Registered: ${new Date(agent.registeredAt).toLocaleString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function registerAgent() {
+            const agentData = {
+                agentMetadata: {
+                    id: `agent-${Date.now()}`,
+                    name: prompt('Agent Name:') || 'New Agent',
+                    version: '1.0.0',
+                    capabilities: ['general'],
+                    domain: 'general'
+                },
+                role: 'PROCESSOR'
+            };
+
+            fetch('/agents/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(agentData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Agent registered successfully!');
+                    refreshData();
+                } else {
+                    alert('Failed to register agent: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        function viewLogs() {
+            window.open('/health', '_blank');
+        }
+
+        function exportData() {
+            fetch('/registry/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'nexusai-runtime-stats.json';
+                    a.click();
+                });
+        }
+    </script>
+</body>
+</html>
+

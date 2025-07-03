@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import json
 import os
@@ -108,6 +108,31 @@ bootstrap_agent = {
 bootstrap_id = registry.register_agent(bootstrap_agent)
 
 # Flask API routes
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api')
+def api_info():
+    return jsonify({
+        'name': 'NexusAI Runtime API',
+        'version': '0.1.0',
+        'status': 'deployed',
+        'registry': 'active',
+        'agentsReady': registry.stats['totalAgents'],
+        'bootstrapAgent': bootstrap_id,
+        'endpoints': {
+            'health': '/health',
+            'register': 'POST /agents/register',
+            'get_agent': 'GET /agents/:id',
+            'query': 'GET /agents/query',
+            'delete': 'DELETE /agents/:id',
+            'stats': '/registry/stats',
+            'schema': '/schema'
+        },
+        'documentation': 'https://github.com/srbryant86/nexusai-runtime-'
+    })
 
 @app.route('/health')
 def health():
@@ -233,27 +258,6 @@ def get_schema():
     return jsonify({
         'success': True,
         'schema': schema
-    })
-
-@app.route('/')
-def index():
-    return jsonify({
-        'name': 'NexusAI Runtime API',
-        'version': '0.1.0',
-        'status': 'deployed',
-        'registry': 'active',
-        'agentsReady': registry.stats['totalAgents'],
-        'bootstrapAgent': bootstrap_id,
-        'endpoints': {
-            'health': '/health',
-            'register': 'POST /agents/register',
-            'get_agent': 'GET /agents/:id',
-            'query': 'GET /agents/query',
-            'delete': 'DELETE /agents/:id',
-            'stats': '/registry/stats',
-            'schema': '/schema'
-        },
-        'documentation': 'https://github.com/nexusai/runtime'
     })
 
 if __name__ == '__main__':
