@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusAI Runtime - Cross-Platform AI Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo h1 {
+            background: linear-gradient(45deg, #daa520, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1rem;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section h3 {
+            color: #daa520;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(218, 165, 32, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: rgba(218, 165, 32, 0.2);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(218, 165, 32, 0.3);
+            border-left: 3px solid #daa520;
+        }
+
+        .content-area {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #ffffff, #daa520);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: #daa520;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #daa520, #ffd700);
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(218, 165, 32, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+            color: #ffffff;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #daa520;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #daa520;
+            box-shadow: 0 0 0 2px rgba(218, 165, 32, 0.2);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23daa520' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #daa520;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .agent-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .agent-info h4 {
+            color: #daa520;
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-meta {
+            display: flex;
+            gap: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .agent-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .badge-warning {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: #daa520;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .healing-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(74, 222, 128, 0.9);
+            color: #000;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .healing-notification.show {
+            transform: translateX(0);
+        }
+
+        .ai-provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .provider-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .provider-card:hover {
+            transform: translateY(-2px);
+            border-color: #daa520;
+        }
+
+        .provider-card.configured {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .provider-logo {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: #daa520;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed rgba(218, 165, 32, 0.5);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: #daa520;
+            background: rgba(218, 165, 32, 0.1);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid #daa520;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <h1>🤖 NexusAI Runtime</h1>
+            <span>Cross-Platform AI Integration</span>
+        </div>
+        <div class="status-indicators">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="system-status">System Healthy</span>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="healing-dot"></div>
+                <span id="healing-status">Self-Healing Active</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="nav-section">
+                <h3>Dashboard</h3>
+                <button class="nav-item active" data-page="overview">
+                    📊 Overview
+                </button>
+                <button class="nav-item" data-page="agents">
+                    🤖 Agents
+                </button>
+                <button class="nav-item" data-page="ai-integrations">
+                    🔗 AI Integrations
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Management</h3>
+                <button class="nav-item" data-page="create-agent">
+                    ➕ Create Agent
+                </button>
+                <button class="nav-item" data-page="templates">
+                    📋 Templates
+                </button>
+                <button class="nav-item" data-page="assets">
+                    📎 Assets
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Monitoring</h3>
+                <button class="nav-item" data-page="self-healing">
+                    🔧 Self-Healing
+                </button>
+                <button class="nav-item" data-page="performance">
+                    📈 Performance
+                </button>
+                <button class="nav-item" data-page="logs">
+                    📝 Logs
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Settings</h3>
+                <button class="nav-item" data-page="configuration">
+                    ⚙️ Configuration
+                </button>
+                <button class="nav-item" data-page="about">
+                    ℹ️ About
+                </button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <!-- Overview Page -->
+            <div id="overview" class="page active">
+                <div class="page-header">
+                    <h2 class="page-title">System Overview</h2>
+                    <p class="page-subtitle">Monitor your NexusAI Runtime system status and performance</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-agents">0</div>
+                        <div class="stat-label">Total Agents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="active-agents">0</div>
+                        <div class="stat-label">Active Agents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="ai-integrations">0</div>
+                        <div class="stat-label">AI Integrations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="healing-actions">0</div>
+                        <div class="stat-label">Healing Actions</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-title">Recent Activity</div>
+                        <div id="recent-activity">
+                            <p>No recent activity</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">System Health</div>
+                        <div id="system-health">
+                            <div class="badge badge-success">All Systems Operational</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents Page -->
+            <div id="agents" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">Agent Management</h2>
+                    <p class="page-subtitle">Manage your AI agents and their configurations</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Registered Agents</div>
+                        <button class="btn" onclick="showCreateAgentModal()">
+                            ➕ Create New Agent
+                        </button>
+                    </div>
+                    <div class="agent-list" id="agent-list">
+                        <p>No agents registered yet. Create your first agent to get started!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Integrations Page -->
+            <div id="ai-integrations" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">AI Integrations</h2>
+                    <p class="page-subtitle">Configure and manage connections to various AI providers</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Available Providers</div>
+                        <button class="btn" onclick="testAllConnections()">
+                            🔍 Test All Connections
+                        </button>
+                    </div>
+                    <div class="ai-provider-grid" id="provider-grid">
+                        <!-- Providers will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Agent Page -->
+            <div id="create-agent" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">Create New Agent</h2>
+                    <p class="page-subtitle">Configure a new AI agent for your system</p>
+                </div>
+
+                <div class="card">
+                    <form id="agent-form">
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label class="form-label" for="agent-name">Agent Name *</label>
+                                <input type="text" id="agent-name" class="form-input" required 
+                                       placeholder="Enter agent name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="agent-role">Role *</label>
+                                <select id="agent-role" class="form-input form-select" required>
+                                    <option value="">Select a role</option>
+                                    <option value="PROCESSOR">Processor</option>
+                                    <option value="GENERATOR">Generator</option>
+                                    <option value="VALIDATOR">Validator</option>
+                                    <option value="ORCHESTRATOR">Orchestrator</option>
+                                    <option value="MONITOR">Monitor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label class="form-label" for="agent-domain">Domain</label>
+                                <select id="agent-domain" class="form-input form-select">
+                                    <option value="general">General</option>
+                                    <option value="nlp">Natural Language Processing</option>
+                                    <option value="data">Data Processing</option>
+                                    <option value="system">System Operations</option>
+                                    <option value="business">Business Logic</option>
+                                    <option value="technical">Technical</option>
+                                    <option value="creative">Creative</option>
+                                    <option value="analytical">Analytical</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="ai-provider">AI Provider</label>
+                                <select id="ai-provider" class="form-input form-select">
+                                    <option value="none">None (System Agent)</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic (Claude)</option>
+                                    <option value="google">Google (Gemini)</option>
+                                    <option value="local">Local Models</option>
+                                    <option value="huggingface">Hugging Face</option>
+                                    <option value="cohere">Cohere</option>
+                                    <option value="replicate">Replicate</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="agent-description">Description</label>
+                            <textarea id="agent-description" class="form-input form-textarea" 
+                                      placeholder="Describe what this agent does"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="agent-capabilities">Capabilities *</label>
+                            <div id="capabilities-checkboxes" class="grid grid-3">
+                                <!-- Capabilities will be loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <div id="llm-config" class="form-group" style="display: none;">
+                            <label class="form-label" for="system-prompt">System Prompt</label>
+                            <textarea id="system-prompt" class="form-input form-textarea" 
+                                      placeholder="Enter system prompt for the AI agent"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn">Create Agent</button>
+                            <button type="button" class="btn btn-secondary" onclick="clearAgentForm()">Clear Form</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Self-Healing Page -->
+            <div id="self-healing" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">Self-Healing System</h2>
+                    <p class="page-subtitle">Monitor and control the self-healing capabilities</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="button-clicks">0</div>
+                        <div class="stat-label">Button Clicks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="failed-clicks">0</div>
+                        <div class="stat-label">Failed Clicks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="upload-attempts">0</div>
+                        <div class="stat-label">Upload Attempts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="healing-actions-count">0</div>
+                        <div class="stat-label">Healing Actions</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Healing Status</div>
+                    <div id="healing-status-details">
+                        <p>Self-healing system is active and monitoring...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other pages would be implemented similarly -->
+            <div id="templates" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">Agent Templates</h2>
+                    <p class="page-subtitle">Pre-configured agent templates for common use cases</p>
+                </div>
+                <div class="card">
+                    <p>Agent templates coming soon...</p>
+                </div>
+            </div>
+
+            <div id="assets" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">Asset Management</h2>
+                    <p class="page-subtitle">Upload and manage files for your agents</p>
+                </div>
+                <div class="card">
+                    <div class="file-drop-zone" onclick="selectFile()">
+                        <h3>📁 Drop files here or click to browse</h3>
+                        <p>Upload assets for your agents</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="performance" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">Performance Monitor</h2>
+                    <p class="page-subtitle">Monitor system performance and metrics</p>
+                </div>
+                <div class="card">
+                    <p>Performance monitoring dashboard coming soon...</p>
+                </div>
+            </div>
+
+            <div id="logs" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">System Logs</h2>
+                    <p class="page-subtitle">View system logs and debugging information</p>
+                </div>
+                <div class="card">
+                    <p>System logs coming soon...</p>
+                </div>
+            </div>
+
+            <div id="configuration" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">Configuration</h2>
+                    <p class="page-subtitle">System settings and preferences</p>
+                </div>
+                <div class="card">
+                    <p>Configuration options coming soon...</p>
+                </div>
+            </div>
+
+            <div id="about" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">About NexusAI Runtime</h2>
+                    <p class="page-subtitle">Information about the application</p>
+                </div>
+                <div class="card">
+                    <h3>NexusAI Runtime v1.0.0</h3>
+                    <p>Cross-platform AI integration and agent management system with self-healing capabilities.</p>
+                    <br>
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Multi-AI provider integration</li>
+                        <li>Self-healing UI system</li>
+                        <li>Agent lifecycle management</li>
+                        <li>Cross-platform compatibility</li>
+                        <li>Real-time monitoring</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="ai-config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Configure AI Provider</h3>
+                <button class="close-btn" onclick="closeModal('ai-config-modal')">&times;</button>
+            </div>
+            <form id="ai-config-form">
+                <div id="ai-config-fields">
+                    <!-- Fields will be populated dynamically -->
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn">Save Configuration</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('ai-config-modal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Healing Notification -->
+    <div id="healing-notification" class="healing-notification">
+        <div id="healing-message"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

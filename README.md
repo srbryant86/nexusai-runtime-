@@ -1,104 +1,141 @@
 # NexusAI Runtime
 
-Complete agent registry logic, contract enforcement schemas, orchestration methods, LiveShell preview interface, and structural documentation. This marks the baseline runtime deployment for NexusAI agent execution and validation.
+Complete agent runtime with LLM-powered contract enforcement, orchestration, metrics, and UI control panel.
 
-## 🚀 Features
+## 🖥️ Desktop Application
 
-- **Agent Registry**: Complete TypeScript implementation with schema validation
-- **Contract Enforcement**: JSON Schema validation with AJV
-- **LiveShell Interface**: Real-time control panel for agent monitoring
-- **REST API**: Full HTTP API for agent management
-- **Health Monitoring**: Continuous agent health checks and status tracking
+Download the cross-platform NexusAI Runtime desktop client:
 
-## 📦 Installation
+- **[Windows (.exe)](https://github.com/srbryant86/nexusai-runtime-/releases/latest/download/NexusAI-Runtime-Setup.exe)**
+- **[macOS (.dmg)](https://github.com/srbryant86/nexusai-runtime-/releases/latest/download/NexusAI-Runtime.dmg)**
+- **[Linux (.AppImage)](https://github.com/srbryant86/nexusai-runtime-/releases/latest/download/NexusAI-Runtime.AppImage)**
+- **[Web Dashboard](https://nghki1c89y8v.manus.space)**
 
-### Dependencies
+## ✨ Features
 
+### 🤖 Cross-Platform AI Integrations
+- **OpenAI** (GPT-4, DALL-E, Whisper)
+- **Anthropic** (Claude-3 models)  
+- **Google** (Gemini Pro)
+- **Cohere** (Command models)
+- **Hugging Face** (Open source models)
+- **Local Models** (Ollama, custom endpoints)
+
+### 🚀 True Creation Engine
+- **Full-Stack Web Applications** - Complete with frontend, backend, database
+- **Mobile Apps** - Cross-platform React Native applications
+- **Landing Pages** - Professional responsive designs
+- **AI Chatbots** - Intelligent conversational interfaces
+- **E-commerce Stores** - Complete online shopping platforms
+- **Data Dashboards** - Interactive analytics and visualization
+
+### 🔧 Self-Healing System
+- **Auto-fixes unresponsive buttons** - Immediate UI repair
+- **Prevents empty agent creation** - Form validation and error prevention
+- **Repairs failed uploads** - Alternative upload methods on failure
+- **Heals API failures** - Retry with backoff + backup endpoints
+- **Real-time diagnostics** - Continuous health monitoring
+
+### 🎯 Agent Management
+- **Create, edit, remove agents** with full validation
+- **Role-based capabilities** (PROCESSOR, GENERATOR, VALIDATOR, etc.)
+- **Asset upload and processing** with clear generation feedback
+- **Performance monitoring** and health checks
+- **Template system** for quick agent creation
+
+## 🚀 Quick Start
+
+### Desktop Application
+1. Download the appropriate executable for your platform
+2. Install and launch the application
+3. Configure your AI providers (OpenAI, Anthropic, etc.)
+4. Create your first agent or project
+5. Start building with AI assistance!
+
+### Web Dashboard
+Visit [https://nghki1c89y8v.manus.space](https://nghki1c89y8v.manus.space) for the web interface.
+
+### Build from Source
 ```bash
-npm install ajv uuid
+git clone https://github.com/srbryant86/nexusai-runtime-.git
+cd nexusai-runtime-
+npm install
+npm start
 ```
 
-Required Node modules:
-- `ajv` (JSON Schema validator)
-- `uuid` (for registration ID generation)
+See [BUILD.md](BUILD.md) for detailed build instructions.
 
-### Setup
+## 📋 System Requirements
 
-1. Clone this repository
-2. Install dependencies: `npm install`
-3. Build TypeScript: `npm run build`
-4. Start the runtime: `npm start`
+- **Windows**: Windows 10 or later
+- **macOS**: macOS 10.14 or later  
+- **Linux**: Ubuntu 18.04+ or equivalent
+- **Memory**: 4GB RAM minimum, 8GB recommended
+- **Storage**: 500MB available space
+- **Network**: Internet connection for AI provider access
 
-## 🔧 API Endpoints
+## 🔑 Configuration
 
-- **POST /agents/register** - Register new agents
-- **GET /agents/:id** - Get agent by ID
-- **GET /agents/query** - Query agents with filters
-- **DELETE /agents/:id** - Remove agents
-- **GET /registry/stats** - Registry statistics
-- **GET /health** - System health check
-- **GET /schema** - Agent contract schema
+### AI Provider Setup
+1. Open the application
+2. Navigate to "AI Integrations"
+3. Click on a provider to configure
+4. Enter your API key and test the connection
 
-## 🖥️ LiveShell Interface
-
-Open `liveshell_preview_controlpanel_v2.html` in your browser for the real-time control interface.
-
-## 📋 Agent Contract Schema
-
-Agents must conform to the JSON schema defined in `agent-contract-schema.json`. Example:
-
-```json
-{
-  "agentMetadata": {
-    "id": "agent-001",
-    "name": "Example Agent",
-    "version": "1.0.0",
-    "capabilities": ["processing", "analysis"],
-    "domain": "data"
-  },
-  "role": "PROCESSOR",
-  "endpoints": {
-    "health": "/health",
-    "execute": "/execute"
-  }
-}
-```
-
-## 🏗️ Architecture
-
-- **AgentRegistry.ts**: Core registry implementation
-- **runtime-server.ts**: HTTP server and API endpoints
-- **agent-contract-schema.json**: Schema validation rules
-- **bootstrap-agent.json**: Default system agent
-- **src/main.py**: Flask wrapper for deployment
-
-## 🌐 Deployment
-
-The system includes both Node.js and Python Flask deployment options:
-
-### Node.js (Development)
+### Environment Variables (Optional)
 ```bash
-npm run dev
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+GOOGLE_API_KEY=your_google_key
 ```
 
-### Flask (Production)
-```bash
-python src/main.py
+## 📖 Documentation
+
+- **[Build Instructions](BUILD.md)** - How to build from source
+- **[API Documentation](docs/api.md)** - REST API reference
+- **[Agent Contracts](docs/contracts.md)** - Agent schema and validation
+- **[Self-Healing Guide](docs/self-healing.md)** - Diagnostic and repair system
+
+## 🛠️ Development
+
+### Project Structure
+```
+nexusai-runtime/
+├── src/                     # Source code
+│   ├── main.js             # Electron main process
+│   ├── app.js              # Application logic
+│   ├── index.html          # UI interface
+│   └── engines/            # Core engines
+├── desktop/                # Built executables
+├── docs/                   # Documentation
+└── package.json
 ```
 
-## 📊 Live Demo
+### Core Components
+- **LLM Handshake Engine** - AI provider integration and communication
+- **True Creation Engine** - Project generation and asset processing  
+- **Self-Healing System** - Automatic error detection and repair
+- **Agent Registry** - Agent lifecycle and contract management
 
-**Permanent URL**: https://qjh9iecewogq.manus.space
+## 🤝 Contributing
 
-## 🤖 Bootstrap Agent
-
-The system automatically registers a bootstrap MONITOR agent for system initialization and health monitoring.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## 🔗 Repository
+## 🆘 Support
 
-https://github.com/srbryant86/nexusai-runtime-
+- **GitHub Issues**: [Report bugs or request features](https://github.com/srbryant86/nexusai-runtime-/issues)
+- **Self-Healing**: Built-in diagnostics and auto-repair
+- **Documentation**: Comprehensive guides in the `docs/` directory
+
+---
+
+**NexusAI Runtime** - Empowering true creation with AI-driven automation and self-healing capabilities.
 
